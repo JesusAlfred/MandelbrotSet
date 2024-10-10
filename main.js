@@ -1,45 +1,68 @@
 import './style.css'
 
-const BOARD_WIDTH = 600;
-const BOARD_HEIGHT = 400;
+const BOARD_WIDTH = 300;
+const BOARD_HEIGHT = 200;
 
 const X1 = -2;
 const X2 = 1;
 const Y1 = -1;
 const Y2 = 1;
 
-const p = 100;
+let LeftLimit;
+let RightLimit;
+let TopLimit;
+let BottomLimit;
+
+
 
 let scale = 0.8221188003905089;
+let p = 100;
+let vel = 0.2
 
 let coordY = 0;
-let coordX = 0;
+let coordX = -1.484583315209498;
 
 const canvas = document.querySelector("#board");
 const ctx = canvas.getContext("2d");
 
 const slider = document.querySelector("#slider");
 
+canvas.width = BOARD_WIDTH;
+canvas.height = BOARD_HEIGHT;
+
 slider.addEventListener("input", (event) => {
   let value = Math.E ** (event.target.value*2) - 1;
   scale = value;
   vel = 1 / scale;
+  p = 100 * (Math.floor(event.target.value) + 1)
   update();
 });
 
-canvas.width = BOARD_WIDTH;
-canvas.height = BOARD_HEIGHT;
-update()
-function update(){
-  for (let y = 0; y < BOARD_HEIGHT; y++){
-    for (let x = 0; x < BOARD_WIDTH; x++){
-      const caculatedColor = getColor(x, y);
-      paint(x, y, Math.floor(mapColor(caculatedColor, 0, 255)));
+let calculateSection = function (start, end) {
+  return new Promise((resolve, reject) => {
+    for (let y = start; y < end; y++){
+      for (let x = 0; x < BOARD_WIDTH; x++){
+        const caculatedColor = getColor(x, y);
+        paint(x, y, Math.floor(mapColor(caculatedColor, 0, 100)));
+      }
     }
+    resolve()
+  });
+};
+const steps = 50;
+async function update(){
+  //console.log(coordX, coordY);
+  LeftLimit   = coordX + X1 / scale;
+  RightLimit  = coordX + X2 / scale;
+  TopLimit    = coordY + Y1 / scale;
+  BottomLimit = coordY + Y2 / scale;
+  for (let i = 0; i < BOARD_HEIGHT; i+=steps) {
+    setTimeout(() => {
+      calculateSection(i, i+steps)
+    }, 0);
   }
 }
 
-let vel = 0.2
 document.addEventListener("keydown", (event) => {
   switch(event.key){
     case "ArrowDown":
@@ -61,12 +84,6 @@ document.addEventListener("keydown", (event) => {
 
 
 function getColor(x, y){
-  
-  const LeftLimit   = coordX + X1 / scale;
-  const RightLimit  = coordX + X2 / scale;
-  const TopLimit    = coordY + Y1 / scale;
-  const BottomLimit = coordY + Y2 / scale;
-
   let real = mapNumber(x, 0, BOARD_WIDTH, LeftLimit, RightLimit);
   let I = mapNumber(y, 0, BOARD_HEIGHT, TopLimit, BottomLimit);
   let zR = 0;
@@ -91,10 +108,7 @@ function getColor(x, y){
 
 
 function paint(x, y, color){
-  let colorTransform = `rgb(${color}, ${color}, ${color})`;
-  
-  
-  ctx.fillStyle = colorTransform;
+  ctx.fillStyle = perc2color(color);;
   ctx.fillRect(x, y, 1, 1);
 }
 
@@ -108,3 +122,13 @@ function mapNumber(n, min1, max1, min2, max2){
   return min2 + steps * n;
 
 }
+
+function perc2color(perc) {
+  if (perc === 0) {
+    return "hsl(0 0% 0%)"
+  }
+  const hue = perc  * 3.60;
+  return `hsl(${hue}, 100%, 50%)`;
+}
+
+update()
