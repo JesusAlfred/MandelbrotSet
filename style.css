@@ -99,6 +99,7 @@ button:focus-visible {
 
 #board {
   margin-top: 4rem;;
+  width: 100%;
 }
 
 #slider, #p{
