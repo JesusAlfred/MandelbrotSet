@@ -1,7 +1,8 @@
 import './style.css'
 
-const BOARD_WIDTH = 300;
-const BOARD_HEIGHT = 200;
+const BOARD_WIDTH = 600;
+const BOARD_HEIGHT = 400;
+const BLOCK_SIZE = 1;
 
 const X1 = -2;
 const X2 = 1;
@@ -16,7 +17,8 @@ let BottomLimit;
 
 
 let scale = 0.8221188003905089;
-let p = 100;
+const initialP = 100;
+let p = initialP;
 let vel = 0.2
 
 let coordY = 0;
@@ -26,15 +28,23 @@ const canvas = document.querySelector("#board");
 const ctx = canvas.getContext("2d");
 
 const slider = document.querySelector("#slider");
+const pSlider = document.querySelector("#p");
 
-canvas.width = BOARD_WIDTH;
-canvas.height = BOARD_HEIGHT;
+canvas.width = BLOCK_SIZE * BOARD_WIDTH;
+canvas.height = BLOCK_SIZE * BOARD_HEIGHT;
+
+ctx.scale(BLOCK_SIZE, BLOCK_SIZE);
 
 slider.addEventListener("input", (event) => {
   let value = Math.E ** (event.target.value*2) - 1;
   scale = value;
   vel = 1 / scale;
-  p = 100 * (Math.floor(event.target.value) + 1)
+  //p = initialP * (Math.floor(event.target.value) + 1)
+  update();
+});
+
+pSlider.addEventListener("input", (event) => {
+  p = event.target.value;
   update();
 });
 
@@ -49,7 +59,7 @@ let calculateSection = function (start, end) {
     resolve()
   });
 };
-const steps = 50;
+const steps = 100;
 async function update(){
   //console.log(coordX, coordY);
   LeftLimit   = coordX + X1 / scale;
